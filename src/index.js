@@ -1,4 +1,4 @@
-import "./openloginAdapter.umd.min";
-import "./web3.min";
-import "./web3auth.umd.min";
-import "./etherforms";
+import "./openloginAdapter.umd.min.js";
+import "./web3.min.js";
+import "./web3auth.umd.min.js";
+import "./etherforms.js";

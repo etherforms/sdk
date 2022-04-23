@@ -134,11 +134,7 @@ let EtherForms = {
     rpc: rpc,
     activeAccount: null,
     init: async function() {
-        console.log("rpc", rpc);
-        $(".btn-logged-in").hide();
-        $("#sign-tx").hide();
-
-        const clientId = "BMeootVyjsUTW8EuKkJ3Mq0kCC5XI-lVeRfQWyrmmqBPfkUeIEF5ckOOCosZdT8Li0uSEL-SzVjlBKNf3wnaeCQ"; // get your clientId from https://developer.web3auth.io
+        const clientId = "BMrruqmToyxCrgGZM3qWEKANo6kwqgQOMxICyqCmYQ3B_qiZGud3bYsHAZUfBXxcwzw1GIW_S5f8BOKl832mHQo"; // get your clientId from https://developer.web3auth.io
 
         const web3AuthCtorParams = {
             clientId,
@@ -155,17 +151,6 @@ let EtherForms = {
         subscribeAuthEvents(this.web3AuthInstance);
 
         await this.web3AuthInstance.initModal();
-        console.log("web3AuthInstance", this.web3AuthInstance, this.web3AuthInstance.provider);
-        if (this.web3AuthInstance.provider) {
-            $(".btn-logged-in").show();
-            $(".btn-logged-out").hide();
-            if (this.web3AuthInstance.connectedAdapterName === "openlogin") {
-                $("#sign-tx").show();
-            }
-        } else {
-            $(".btn-logged-out").show();
-            $(".btn-logged-in").hide();
-        }
     },
     connect: async function () {
         const provider = await this.web3AuthInstance.connect();
@@ -192,39 +177,51 @@ EtherForms.init();
 // Listeners
 const abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"}];
 
-document.body.addEventListener("click", function (event) {
-    const isWeb3Btn = (event.target.getAttribute("data-web3-contract") || "").length === 42 && (event.target.getAttribute("data-web3-function") || "").length > 0
+const etherForm = document.getElementById("etherForm");
 
-    if (isWeb3Btn) {
-        const contractAddress = event.target.getAttribute("data-web3-contract");
-        const functionToCall = event.target.getAttribute("data-web3-function");
-        let functionArguments = event.target.getAttribute("data-web3-arguments") || null;
+etherForm.addEventListener("submit", function(e){
+    e.preventDefault();
 
-        if (!!functionArguments) {
-            functionArguments = JSON.parse(functionArguments);
-        }
-
+    if (!EtherForms.activeAccount) {
         (async () => {
-            const web3 = new Web3(EtherForms.web3AuthInstance.provider);
-            const contract = new web3.eth.Contract(abi, contractAddress);
-
-            if (!!functionArguments) {
-                console.log(
-                    await contract
-                        .methods[functionToCall](...functionArguments)
-                        .send({
-                            from: EtherForms.activeAccount
-                        })
-                )
-            } else {
-                console.log(
-                    await contract
-                        .methods[functionToCall]()
-                        .send({
-                            from: EtherForms.activeAccount
-                        })
-                )
-            }
+            await EtherForms.connect();
         })();
+        return;
     }
+
+    let inputs = etherForm.getAttribute('data-web3-inputs') || [];
+
+    if (inputs) {
+        inputs = JSON.parse(inputs);
+    }
+
+    const formData = new FormData(etherForm);
+
+    const inputValues = inputs.map((input) => formData.get(input));
+
+    const contractAddress = etherForm.getAttribute("data-web3-contract");
+    const functionToCall = etherForm.getAttribute("data-web3-function");
+
+    (async () => {
+        const web3 = new Web3(EtherForms.web3AuthInstance.provider);
+        const contract = new web3.eth.Contract(abi, contractAddress);
+
+        if (inputValues.length > 0) {
+            console.log(
+                await contract
+                    .methods[functionToCall](...inputValues)
+                    .send({
+                        from: EtherForms.activeAccount
+                    })
+            )
+        } else {
+            console.log(
+                await contract
+                    .methods[functionToCall]()
+                    .send({
+                        from: EtherForms.activeAccount
+                    })
+            )
+        }
+    })();
 });
