@@ -8,11 +8,18 @@
     "build": "npx webpack --config webpack.config.js",
     "build:production": "webpack --config webpack.production.js"
   },
-  "keywords": ["EVM", "web3", "solidity", "sdk", "javascript"],
+  "keywords": [
+    "EVM",
+    "web3",
+    "solidity",
+    "sdk",
+    "javascript"
+  ],
   "license": "ISC",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",
+    "compression-webpack-plugin": "^9.2.0",
     "eslint": "^8.14.0",
     "ts-loader": "^9.2.9",
     "typescript": "^4.6.3",
