@@ -1,7 +1,7 @@
 import { JsonRpcSigner, TransactionResponse, Web3Provider } from "@ethersproject/providers";
 import { Contract } from "@ethersproject/contracts";
-import { strToSlug } from "./Helpers";
 import InputValue from "./interfaces/InputValue";
+import { strToSlug } from "./helpers";
 
 interface IEtherFormsSDK {
     web3Provider: Web3Provider | null
@@ -71,13 +71,6 @@ document.querySelectorAll("form.ef-modal-form")
                 console.log(inputs);
 
                 const formData = new FormData(form);
-
-                const inputValues = inputs
-                    .split(",")
-                    .filter((input: string) => input.split(":").length === 2)
-                    .map((input: string) => formData.get(
-                        strToSlug(input.split(":")[0])
-                    ));
 
                 const methodArgumentsAbi = inputs
                     .split(",")
