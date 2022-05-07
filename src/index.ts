@@ -43,7 +43,7 @@ function validate(value: string, dataType: string): boolean {
     modal.id = "etherFormModal";
     modal.className = "ef-modal";
 
-    modal.innerHTML = "<div class=\"ef-modal-dialog\"><div class='ef-modal-content'><div class='ef-modal-body'></div></div></div>";
+    modal.innerHTML = "<div class=\"ef-modal-backdrop\"></div><div class=\"ef-modal-dialog\"><div class='ef-modal-content'><form action='' class='ef-modal-form'><div class='ef-modal-header'>Submit Transaction</div><div class='ef-modal-body'></div><div class='ef-modal-footer'><button class='ef-modal-button'>Submit</button></div></div></form></div>";
 
     document.body.appendChild(modal);
 })();
@@ -95,6 +95,10 @@ document.querySelectorAll("[data-web3-contract]")
 
                             modalBody.innerHTML += "<div><label for=\"ef_"+label+"\">"+label+" ("+dataType+")</label><input type=\"text\" id=\"ef_"+label+"\" /></div>";
                         });
+
+                    if ( ! modal.classList.contains("show")) {
+                        modal.classList.add("show");
+                    }
 
                     /*
                     inputs
