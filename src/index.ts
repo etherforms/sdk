@@ -1,5 +1,7 @@
 import { JsonRpcSigner, TransactionResponse, Web3Provider } from "@ethersproject/providers";
 import { Contract } from "@ethersproject/contracts";
+import { strToSlug } from "./Helpers";
+import InputValue from "./interfaces/InputValue";
 
 interface IEtherFormsSDK {
     web3Provider: Web3Provider | null
@@ -48,7 +50,94 @@ function validate(value: string, dataType: string): boolean {
     document.body.appendChild(modal);
 })();
 
-// Listener
+// Listeners
+document.querySelectorAll("form.ef-modal-form")
+    .forEach(function (element: Element) {
+        element.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            (async () => {
+                const form = event.target as HTMLFormElement;
+
+                const contractAddress = form.getAttribute("data-web3-contract");
+                const contractMethod = form.getAttribute("data-web3-function");
+                const inputs = form.getAttribute("data-web3-inputs");
+
+                console.log("contractAddress");
+                console.log(contractAddress);
+                console.log("contractMethod");
+                console.log(contractMethod);
+                console.log("inputs");
+                console.log(inputs);
+
+                const formData = new FormData(form);
+
+                const inputValues = inputs
+                    .split(",")
+                    .filter((input: string) => input.split(":").length === 2)
+                    .map((input: string) => formData.get(
+                        strToSlug(input.split(":")[0])
+                    ));
+
+                const methodArgumentsAbi = inputs
+                    .split(",")
+                    .filter((input: string) => input.split(":").length === 2)
+                    .map((input: string) => {
+                        const splittedInput = input.split(":");
+
+                        return splittedInput[1]+" "+splittedInput[0];
+                    })
+                    .join(", ");
+
+                const abi = ["function "+contractMethod+"("+methodArgumentsAbi+")"];
+
+                const contract = new Contract(contractAddress, abi, EtherFormsSDK.signer);
+
+                let response: TransactionResponse | null = null;
+
+                if (methodArgumentsAbi.length > 0) {
+                    const methodArguments: string[] = [];
+                    let methodArgumentErrors = 0;
+
+                    inputs
+                        .split(",")
+                        .filter((input: string) => input.split(":").length === 2)
+                        .map((input: string): InputValue => {
+                            const [label, dataType] = input.split(":");
+
+                            const inputValue = formData.get(strToSlug(label));
+
+                            return {
+                                label,
+                                value: typeof inputValue === "string" ? inputValue : null,
+                                dataType,
+                            };
+                        })
+                        .forEach(function (inputValue: InputValue) {
+                            const { value, dataType } = inputValue;
+
+                            if (false === validate(value, dataType)) {
+                                methodArgumentErrors++;
+                            }
+
+                            methodArguments.push(value);
+                        });
+
+                    if (methodArgumentErrors === 0) {
+                        response = await contract[contractMethod](...methodArguments);
+                    } else {
+                        console.log("Error with the provided inputs");
+                    }
+                    // */
+                } else {
+                    response = await contract[contractMethod]();
+                }
+
+                console.log(response);
+            })();
+        });
+    });
+
 document.querySelectorAll("[data-web3-contract]")
     .forEach(function (element) {
         element.addEventListener("click", function (event) {
@@ -88,12 +177,20 @@ document.querySelectorAll("[data-web3-contract]")
 
                     modalBody.innerHTML = "";
 
+                    const etherForm = modal.querySelector("form.ef-modal-form");
+
+                    etherForm.setAttribute("data-web3-contract", contractAddress);
+                    etherForm.setAttribute("data-web3-function", contractMethod);
+                    etherForm.setAttribute("data-web3-inputs", inputs);
+
                     inputs
                         .split(",")
                         .forEach(function (input: string) {
                             const [label, dataType] = input.split(":");
 
-                            modalBody.innerHTML += "<div><label for=\"ef_"+label+"\">"+label+" ("+dataType+")</label><input type=\"text\" id=\"ef_"+label+"\" /></div>";
+                            const sluggedLabel = strToSlug(label);
+
+                            modalBody.innerHTML += "<div><label for=\"ef_"+sluggedLabel+"\">"+label+" ("+dataType+")</label><input type=\"text\" id=\"ef_"+sluggedLabel+"\" name=\""+sluggedLabel+"\" /></div>";
                         });
 
                     if ( ! modal.classList.contains("show")) {
