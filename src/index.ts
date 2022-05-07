@@ -35,7 +35,18 @@ function validate(value: string, dataType: string): boolean {
 }
 
 // Initialize SDK
-EtherFormsSDK.initialize();
+(() => {
+    EtherFormsSDK.initialize();
+
+    const modal = document.createElement("div");
+
+    modal.id = "etherFormModal";
+    modal.className = "ef-modal";
+
+    modal.innerHTML = "<div class=\"ef-modal-dialog\"><div class='ef-modal-content'><div class='ef-modal-body'></div></div></div>";
+
+    document.body.appendChild(modal);
+})();
 
 // Listener
 document.querySelectorAll("[data-web3-contract]")
@@ -67,9 +78,25 @@ document.querySelectorAll("[data-web3-contract]")
                 let response: TransactionResponse | null = null;
 
                 if (methodArgumentsAbi.length > 0) {
-                    const methodArguments: string[] = [];
-                    let methodArgumentErrors = 0;
+                    // Create Form Popup
+                    // const methodArguments: string[] = [];
+                    // let methodArgumentErrors = 0;
 
+                    const modal = document.getElementById("etherFormModal");
+
+                    const modalBody = modal.querySelector(".ef-modal-body");
+
+                    modalBody.innerHTML = "";
+
+                    inputs
+                        .split(",")
+                        .forEach(function (input: string) {
+                            const [label, dataType] = input.split(":");
+
+                            modalBody.innerHTML += "<div><label for=\"ef_"+label+"\">"+label+" ("+dataType+")</label><input type=\"text\" id=\"ef_"+label+"\" /></div>";
+                        });
+
+                    /*
                     inputs
                         .split(",")
                         .forEach(function (input: string) {
@@ -89,6 +116,7 @@ document.querySelectorAll("[data-web3-contract]")
                     } else {
                         console.log("Error with the provided inputs");
                     }
+                    // */
                 } else {
                     response = await contract[contractMethod]();
                 }
