@@ -5,8 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack serve --open --config webpack.dev.js",
-    "build": "npx webpack --config webpack.config.js",
-    "build:production": "webpack --config webpack.production.js"
+    "dev": "npx webpack --config webpack.config.js",
+    "build": "npx webpack --config webpack.production.js"
   },
   "keywords": [
     "EVM",
@@ -21,6 +21,8 @@
     "@typescript-eslint/parser": "^5.21.0",
     "compression-webpack-plugin": "^9.2.0",
     "eslint": "^8.14.0",
+    "file-loader": "^6.2.0",
+    "node-sass": "^7.0.1",
     "sass": "^1.51.0",
     "sass-loader": "^12.6.0",
     "ts-loader": "^9.2.9",
