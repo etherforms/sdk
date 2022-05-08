@@ -1,0 +1,104 @@
+.ef-modal {
+    display: none;
+    z-index: 1055;
+
+    .ef-modal-backdrop {
+        background-color: rgba(0,0,0,.5);
+        display: block;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+    .ef-modal-dialog {
+        display: block;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: .25rem;
+        background-color: #fff;
+        border: 1px solid rgba(0,0,0,.5);
+        width: 350px;
+        box-shadow: 0 1px 20px -10px rgba(0,0,0,.5);
+        overflow: hidden;
+    }
+}
+.ef-modal.show {
+    display: block;
+}
+.ef-modal-header {
+    background-color: #f4f4f4;
+    position: relative;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 1px solid #dbdbdb;
+    padding: .75rem 1rem;
+    .ef-modal-close-button {
+        cursor: pointer;
+        background: transparent;
+        border: 0;
+        padding: 1px 5px 4px;
+        line-height: 1;
+        position: absolute;
+        top: 50%;
+        right: 1rem;
+        transform: translateY(-50%);
+        opacity: .5;
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+.ef-modal-footer {
+    background-color: #f4f4f4;
+    padding: .75rem 1rem;
+    border-top: 1px solid #dbdbdb;
+    .ef-modal-button {
+        width: 100%;
+        border: 0;
+        outline: 0;
+        cursor: pointer;
+        color: white;
+        background-color: rgb(84, 105, 212);
+        box-shadow: rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 12%) 0px 1px 1px 0px, rgb(84 105 212) 0px 0px 0px 1px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(60 66 87 / 8%) 0px 2px 5px 0px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 4px 8px;
+        display: inline-block;
+        min-height: 28px;
+        transition: background-color .24s, box-shadow .24s;
+        &:hover {
+            box-shadow: rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 12%) 0px 1px 1px 0px, rgb(84 105 212) 0px 0px 0px 1px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(60 66 87 / 8%) 0px 3px 9px 0px, rgb(60 66 87 / 8%) 0px 2px 5px 0px;
+        }
+    }
+}
+.ef-modal-body {
+    padding: 1rem;
+    label {
+        display: block;
+    }
+    input {
+        font-size: 16px;
+        padding: .5rem .75rem;
+        min-width: 100%;
+        box-sizing: border-box;
+        border: 1px solid rgba(0,0,0,.25);
+        border-radius: .25rem;
+        background-color: rgba(0,0,0,.02);
+        font-family: sans-serif;
+        &:focus {
+            outline: none;
+            background-color: #fff;
+            box-shadow: 0 1px 10px -5px rgba(0,0,0,.25);
+        }
+    }
+    >div {
+        &:not(:last-child) {
+            margin: 0 0 1rem;
+        }
+    }
+}
