@@ -1,7 +1,21 @@
 import { JsonRpcSigner, TransactionResponse, Web3Provider } from "@ethersproject/providers";
 import { Contract } from "@ethersproject/contracts";
 import InputValue from "./interfaces/InputValue";
-import { strToSlug } from "./helpers";
+import { strToSlug, validateData } from "./helpers";
+
+declare global {
+    interface Window {
+        EtherForms: IEtherForms
+    }
+}
+
+interface IEtherForms {
+    events: {
+        onOpenModal(): void
+        onCloseModal(): void
+        onTransactionSubmitted(transactionResponse: TransactionResponse): TransactionResponse
+    }
+}
 
 interface IEtherFormsSDK {
     web3Provider: Web3Provider | null
@@ -21,33 +35,38 @@ const EtherFormsSDK: IEtherFormsSDK = {
 
         this.accounts = this.web3Provider.send("eth_requestAccounts", []);
         this.signer = this.web3Provider.getSigner();
+
+        const modal = document.createElement("div");
+
+        modal.id = "etherFormModal";
+        modal.className = "ef-modal";
+
+        modal.innerHTML = "<div class=\"ef-modal-backdrop\"></div><div class=\"ef-modal-dialog\"><div class='ef-modal-content'><form action='' class='ef-modal-form'><div class='ef-modal-header'>Submit Transaction <button type=\"button\" class=\"ef-modal-close-button\">&times;</button></div><div class='ef-modal-body'></div><div class='ef-modal-footer'><button class='ef-modal-button'>Submit</button></div></div></form></div>";
+
+        document.body.appendChild(modal);
     }
 };
 
-// TODO: Fix validation
-function validate(value: string, dataType: string): boolean {
-    switch (dataType) {
-    case "address":
-        return value.length === 42 && value.slice(0, 2) === "0x";
-    case "uint256":
-        return value.length > 0;
-    default:
-        return true;
+// Attach events to Window
+const EtherForms: IEtherForms = {
+    events: {
+        onOpenModal: () => {
+            console.log("User opened modal...");
+        },
+        onCloseModal: () => {
+            console.log("User closed modal...");
+        },
+        onTransactionSubmitted: (transactionResponse: TransactionResponse): TransactionResponse => {
+            return transactionResponse;
+        }
     }
-}
+};
+
+window.EtherForms = EtherForms;
 
 // Initialize SDK
 (() => {
     EtherFormsSDK.initialize();
-
-    const modal = document.createElement("div");
-
-    modal.id = "etherFormModal";
-    modal.className = "ef-modal";
-
-    modal.innerHTML = "<div class=\"ef-modal-backdrop\"></div><div class=\"ef-modal-dialog\"><div class='ef-modal-content'><form action='' class='ef-modal-form'><div class='ef-modal-header'>Submit Transaction</div><div class='ef-modal-body'></div><div class='ef-modal-footer'><button class='ef-modal-button'>Submit</button></div></div></form></div>";
-
-    document.body.appendChild(modal);
 })();
 
 // Listeners
@@ -62,13 +81,6 @@ document.querySelectorAll("form.ef-modal-form")
                 const contractAddress = form.getAttribute("data-web3-contract");
                 const contractMethod = form.getAttribute("data-web3-function");
                 const inputs = form.getAttribute("data-web3-inputs");
-
-                console.log("contractAddress");
-                console.log(contractAddress);
-                console.log("contractMethod");
-                console.log(contractMethod);
-                console.log("inputs");
-                console.log(inputs);
 
                 const formData = new FormData(form);
 
@@ -109,7 +121,7 @@ document.querySelectorAll("form.ef-modal-form")
                         .forEach(function (inputValue: InputValue) {
                             const { value, dataType } = inputValue;
 
-                            if (false === validate(value, dataType)) {
+                            if (false === validateData(value, dataType)) {
                                 methodArgumentErrors++;
                             }
 
@@ -126,7 +138,7 @@ document.querySelectorAll("form.ef-modal-form")
                     response = await contract[contractMethod]();
                 }
 
-                console.log(response);
+                window.EtherForms.events.onTransactionSubmitted(response);
             })();
         });
     });
@@ -160,10 +172,6 @@ document.querySelectorAll("[data-web3-contract]")
                 let response: TransactionResponse | null = null;
 
                 if (methodArgumentsAbi.length > 0) {
-                    // Create Form Popup
-                    // const methodArguments: string[] = [];
-                    // let methodArgumentErrors = 0;
-
                     const modal = document.getElementById("etherFormModal");
 
                     const modalBody = modal.querySelector(".ef-modal-body");
@@ -188,6 +196,8 @@ document.querySelectorAll("[data-web3-contract]")
 
                     if ( ! modal.classList.contains("show")) {
                         modal.classList.add("show");
+
+                        window.EtherForms.events.onOpenModal();
                     }
 
                     /*
@@ -215,7 +225,33 @@ document.querySelectorAll("[data-web3-contract]")
                     response = await contract[contractMethod]();
                 }
 
-                console.log(response);
+                window.EtherForms.events.onTransactionSubmitted(response);
             })();
         });
+    });
+
+document.querySelectorAll(".ef-modal-backdrop")
+    .forEach(function (element) {
+        element.addEventListener("click", function (event) {
+            event.preventDefault();
+
+            const modal = document.getElementById("etherFormModal");
+
+            if (modal.classList.contains("show")) {
+                modal.classList.remove("show");
+                window.EtherForms.events.onCloseModal();
+            }
+        });
+    });
+
+document.querySelector(".ef-modal-close-button")
+    .addEventListener("click", function (event) {
+        event.preventDefault();
+
+        const modal = document.getElementById("etherFormModal");
+
+        if (modal.classList.contains("show")) {
+            modal.classList.remove("show");
+            window.EtherForms.events.onCloseModal();
+        }
     });
