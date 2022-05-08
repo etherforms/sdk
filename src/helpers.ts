@@ -1,3 +1,5 @@
+import { isAddress } from "@ethersproject/address";
+
 export function strToSlug(value: string) {
     value = value.replace(/^\s+|\s+$/g, ""); // trim
     value = value.toLowerCase();
@@ -14,4 +16,15 @@ export function strToSlug(value: string) {
         .replace(/-+/g, "-"); // collapse dashes
 }
 
-export default { strToSlug };
+export function validateData(value: string, dataType: string): boolean {
+    switch (dataType) {
+    case "address":
+        return isAddress(value);
+    case "uint256":
+        return value.length > 0 && value.slice(0, 1) !== "-";
+    default:
+        return true;
+    }
+}
+
+export default { strToSlug, validateData };
